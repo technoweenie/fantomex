@@ -7,6 +7,16 @@ Fantomex was created by the Weapon Plus Program to serve as a super-sentinel aga
 ## Intro
 
 Fantomex is a lib for storing a relatively small number of background jobs in
-a persistent queue.  It's designed as a way for a single ZeroMQ worker to queue
-messages.
+a persistent queue.  It's designed as a way for a single ZeroMQ worker to store
+incoming messages in case of a crash.  If Fantomex is tracking 10,000
+jobs, you should probably look into fixing your workers or adding more
+to handle the load.
+
+A lot of inspiration came from the design of Resque and Delayed Job, but
+there are a few key features that Fantomex needs.
+
+* Use isolated databases scoped to the worker, not central databases
+  like Redis or MySQL.
+* Allow the requeueing of errored jobs.  Fantomex jobs should *always*
+  be run.
 
