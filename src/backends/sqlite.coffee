@@ -8,8 +8,11 @@ class Backend
     @db = new Sqlite3.Database options.path || ':memory:'
     @setup()
 
-  push: (msg) ->
-    @db.run "INSERT INTO messages VALUES (?)", msg.toString()
+  transaction: (cb) ->
+    @db.serialize cb
+
+  push: (msg, cb) ->
+    @db.run "INSERT INTO messages VALUES (?)", msg.toString(), cb
 
   # Gets the earliest message.
   peek: (cb) ->
@@ -22,6 +25,9 @@ class Backend
         cb(err)
       else
         cb null, row.count
+
+  remove: (id, cb) ->
+    @db.run "DELETE FROM messages WHERE rowid = ?", id, cb
 
   setup: ->
     @db.serialize =>

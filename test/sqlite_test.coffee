@@ -3,27 +3,41 @@ backend = require('../src/backends/sqlite').create()
 
 calls = 0
 
-# no messages
-backend.peek (err, obj) ->
-  calls += 1
-  assert.equal null, err
-  assert.equal null, obj
+backend.transaction ->
+  # no messages
+  backend.peek (err, obj) ->
+    calls += 1
+    assert.equal null, err
+    assert.equal null, obj
 
-backend.count (err, num) ->
-  calls += 1
-  assert.equal 0, num
+  # no messages
+  backend.count (err, num) ->
+    calls += 1
+    assert.equal 0, num
 
-backend.push "booya"
+  # add a message
+  backend.push "booya"
 
-backend.peek (err, obj) ->
-  calls += 1
-  assert.equal null, err
-  assert.ok    obj.id
-  assert.equal "booya", obj.data
+  # now it's visible
+  obj_id = null
+  backend.peek (err, obj) ->
+    calls += 1
+    assert.equal null, err
+    assert.ok    obj.id
+    obj_id = obj.id
 
-backend.count (err, num) ->
-  calls += 1
-  assert.equal 1, num
+  # and it's counted
+  backend.count (err, num) ->
+    calls += 1
+    assert.equal 1, num
+
+    # remove the message :(
+    backend.remove obj_id
+
+    # not counted anymore
+    backend.count (err, num) ->
+      calls += 1
+      assert.equal 0, num
 
 process.on 'exit', ->
-  assert.equal 4, calls
+  assert.equal 5, calls
