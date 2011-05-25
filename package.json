@@ -1,0 +1,16 @@
+{ "name":        "fantomex"
+, "description": "Small persistent queueing library"
+, "version":     "0.0.1"
+, "author":      "technoweenie"
+, "engines" :    [ "node >= 0.4.0" ]
+, "homepage":    "https://github.com/technoweenie/fantomex"
+, "main":        "./lib/index"
+, "directories":
+  { "lib": "./lib"
+  }
+, "repository":
+  { "type": "git"
+  , "url":  "https://github.com/technoweenie/fantomex.git"
+  }
+}
+
