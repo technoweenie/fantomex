@@ -8,6 +8,9 @@ class Backend
     @db = new Sqlite3.Database options.path || ':memory:'
     @setup()
 
+  push: (msg) ->
+    @db.run "INSERT INTO messages VALUES (?)", msg.toString()
+
   # Gets the earliest message.
   peek: (cb) ->
     sql = "SELECT rowid AS id, data FROM messages ORDER BY rowid LIMIT 1"
