@@ -43,14 +43,13 @@ restarting after a crash and there is a backlog).
 
     // Emits the message that was received.  Whatever happens, Fantomex
     // should either remove the message or requeue it, so it can 
-    store.on("message", function(id, msg) {
+    store.on("message", function(msg, next) {
       try {
         doSomethingTo(msg)
-
-        store.remove(id)
+        next() // all done!
 
       } catch(e) {
-        store.redo(id, msg, e)
+        next(e) // track the error
       }
     })
 
