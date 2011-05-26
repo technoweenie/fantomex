@@ -3,3 +3,5 @@ src/
 .git*
 *.md
 examples
+*.db
+*.sqlite*
