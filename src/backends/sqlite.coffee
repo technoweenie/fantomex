@@ -13,7 +13,9 @@ class SqliteBackend extends Backend
     @db.serialize cb
 
   push: (msg, cb) ->
-    @db.run "INSERT INTO messages VALUES (?)", msg.toString(), cb
+    @db.run "INSERT INTO messages VALUES (?)", msg.toString(), (args...) =>
+      @events.emit 'incoming'
+      cb?(args...)
 
   # Gets the earliest message.
   peek: (cb) ->

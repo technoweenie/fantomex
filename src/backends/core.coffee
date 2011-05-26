@@ -5,9 +5,14 @@ class module.exports
     @setup()
     @events  = new EventEmitter
     @polling = false
+    @timer   = null
 
   on: (event, listener) ->
     @events.on event, listener
+    if @events.listeners(event).length == 1
+      @events.on 'incoming', =>
+        clearTimeout @timer if @timer
+        @poll()
     @poll()
 
   emit: (event, args...) ->
@@ -34,7 +39,7 @@ class module.exports
 
   poll_in: (sec) ->
     @polling = false
-    setTimeout =>
+    @timer = setTimeout =>
       @poll()
     , sec * 1000
 
