@@ -63,3 +63,7 @@ Next, add items to the queue as they come in from ZeroMQ (or wherever).
 
     })
 
+## Status
+
+Alpha.
+
