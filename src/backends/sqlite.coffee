@@ -1,12 +1,13 @@
 Sqlite3 = require('sqlite3').verbose()
+Backend = require './core'
 
 exports.create = (options) ->
-  new Backend options or {}
+  new SqliteBackend options or {}
 	
-class Backend
+class SqliteBackend extends Backend
   constructor: (options) ->
     @db = new Sqlite3.Database options.path || ':memory:'
-    @setup()
+    super()
 
   transaction: (cb) ->
     @db.serialize cb
