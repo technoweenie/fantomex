@@ -27,8 +27,14 @@ class SqliteBackend extends Backend
   #
   # Returns nothing.
   push: (msg, cb) ->
-    @db.run "INSERT INTO messages (data, retries) VALUES (?, 0)",
-      msg.toString(), (args...) =>
+    obj = if msg.data?
+      msg
+    else
+      {data: msg.toString()}
+    obj.run_at  or= new Date
+    obj.retries or= 0
+    @db.run "INSERT INTO messages (data, run_at, retries) VALUES (?, ?, ?)",
+      obj.data, @dateToSql(obj.run_at), obj.retries, (args...) =>
         @events.emit 'incoming'
         cb?(args...)
 
@@ -41,8 +47,9 @@ class SqliteBackend extends Backend
   # Returns nothing.
   peek: (cb) ->
     sql = "SELECT rowid AS id, data, retries, run_at FROM messages
+      WHERE run_at <= ?
       ORDER BY run_at,rowid LIMIT 1"
-    @db.get sql, cb
+    @db.get sql, @dateToSql(), cb
 
   # Counts the messages in the queue.
   #
@@ -75,6 +82,26 @@ class SqliteBackend extends Backend
   # Returns nothing.
   transaction: (cb) ->
     @db.serialize cb
+
+  reschedule: (obj, time, cb) ->
+    obj.retries or= 0
+    obj.retries  += 1
+    obj.run_at    = @rescheduledTime(time, obj.retries)
+    # for some reason, removing and reinserting worked better than
+    # updating in place.
+    @transaction =>
+      @remove obj.id
+      @push obj, cb
+
+  rescheduledTime: (time, retries) ->
+    time   or= new Date
+    duration = Math.pow(retries, 4) + 5
+    seconds  = time - -(duration * 1000)
+    new Date(seconds)
+
+  dateToSql: (date) ->
+    date or= new Date
+    date.toISOString().replace('T', ' ').replace(/\..*/, '')
 
   # Sets up the sqlite table.
   #

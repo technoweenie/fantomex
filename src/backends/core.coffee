@@ -34,7 +34,7 @@ class module.exports
   #               err - Optional error object.
   #
   # Returns nothing.
-  poll: ->
+  poll: (from)->
     return if @polling
     @polling = true
     @peek (err, obj) =>
@@ -44,12 +44,13 @@ class module.exports
         if obj
           @events.emit 'message', obj.data, (err) =>
             if err
-              @events.emit 'error', err
-
-            # temporarily remove errored messages until we can retry
-            @remove obj.id, =>
-              @polling = false
-              @poll()
+              @reschedule obj, null, (err) =>
+                @polling = false
+                @poll()
+            else
+              @remove obj.id, =>
+                @polling = false
+                @poll()
         else
           @poll_in 1
 

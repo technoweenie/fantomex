@@ -41,26 +41,23 @@ backend.transaction ->
       testEvents()
 
 testEvents = ->
-  # only 1 error is expected.  throw any tohers.
-  backend.on 'error', (err) ->
-    calls += 1
-    if err == 123
-      backend.push 'count'
-    else
-      throw err
-
+  seen_error = false
   backend.on 'message', (msg, next) ->
     calls += 1
     # message 1 tests the success case: the message is deleted from the
     # queue
     if msg == 'success'
-      backend.push 'error'
-      next()
+      backend.push 'error', -> next()
 
     # message 2 tests the error case: the message is requeued at a later
     # time
     else if msg == 'error'
-      next 123 # setting an error
+      if seen_error
+        assert.fail "The 'error' message was emitted twice"
+      else
+        seen_error = true
+        next 123 # setting an error
+        backend.push 'count'
 
     # message 3 is a test to check that the error job is still in the
     # queue.
@@ -69,7 +66,11 @@ testEvents = ->
     else if msg == 'count'
       backend.count (err, num) ->
         calls += 1
-        assert.equal 1, num
+        assert.equal 2, num # one is the error
+        backend.peek (err, msg) ->
+          calls += 1
+          # the error will be retried in a few seconds
+          assert.equal 'count', msg.data
 
     # unexpected!
     else
