@@ -63,9 +63,7 @@ Next, add items to the queue as they come in from ZeroMQ (or wherever).
     // this could be a ZeroMQ socket, or some other clever lib that
     // emits messages.  Doesn't realprocess.cwd()ly matter to Fantomex.
     queue.on("message", function(msg) {
-
       store.push(msg) // calls toString()
-
     })
 
 ## Status
