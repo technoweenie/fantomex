@@ -5,3 +5,4 @@ src/
 examples
 *.db
 *.sqlite*
+node_modules
