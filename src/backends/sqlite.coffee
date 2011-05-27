@@ -40,8 +40,8 @@ class SqliteBackend extends Backend
   #
   # Returns nothing.
   peek: (cb) ->
-    sql = "SELECT rowid AS id, data, retries FROM messages
-      ORDER BY time,rowid LIMIT 1"
+    sql = "SELECT rowid AS id, data, retries, run_at FROM messages
+      ORDER BY run_at,rowid LIMIT 1"
     @db.get sql, cb
 
   # Counts the messages in the queue.
@@ -87,11 +87,11 @@ class SqliteBackend extends Backend
       @db.run "CREATE TABLE IF NOT EXISTS messages (
         data TEXT,
         retries INTEGER,
-        time DATETIME DEFAULT CURRENT_TIMESTAMP)", (err) =>
+        run_at DATETIME DEFAULT CURRENT_TIMESTAMP)", (err) =>
           if err
             cb? err
             @events.emit 'error', err
-      @db.run "CREATE INDEX IF NOT EXISTS messages_by_time ON messages (time)",
+      @db.run "CREATE INDEX IF NOT EXISTS messages_by_run_at ON messages (run_at)",
         (err) =>
           if err
             cb? err
