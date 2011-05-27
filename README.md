@@ -45,11 +45,16 @@ restarting after a crash and there is a backlog).
     // should either remove the message or requeue it, so it can 
     store.on("message", function(msg, next) {
       try {
+        // do it for the logs
+        console.time("message")
         doSomethingTo(msg)
         next() // all done!
-
       } catch(e) {
+        console.log("Error:")
+        console.log(e)
         next(e) // track the error
+      } finally {
+        console.timeEnd("message")
       }
     })
 
