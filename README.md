@@ -14,10 +14,10 @@ cyborg mutation in eighteen months.
 ## Intro
 
 Fantomex is a lib for storing a relatively small number of background jobs in
-a persistent queue.  It's designed as a way for a single ZeroMQ worker to store
-incoming messages in case of a crash.  If Fantomex is tracking 10,000
-jobs, you should probably look into fixing your workers or adding more
-to handle the load.
+a persistent queue.  It's designed as a way for a single Redis pub/sub or
+ZeroMQ worker to store incoming messages in case of a crash.  If Fantomex is
+tracking 10,000 jobs, you should probably look into fixing your workers or
+adding more to handle the load.
 
 A lot of inspiration came from the design of Resque and Delayed Job, but
 there are a few key features that Fantomex needs.
@@ -65,6 +65,12 @@ Next, add items to the queue as they come in from ZeroMQ (or wherever).
     queue.on("message", function(msg) {
       store.push(msg) // calls toString()
     })
+
+## TODO
+
+* Investigate other databases (Kyoto Cabinet, LevelDB, Redis, etc).
+* Investigate abstract SQL interface so sqlite support means
+  mysql/postgres also work.
 
 ## Status
 
