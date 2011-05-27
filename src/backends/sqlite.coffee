@@ -27,19 +27,21 @@ class SqliteBackend extends Backend
   #
   # Returns nothing.
   push: (msg, cb) ->
-    @db.run "INSERT INTO messages VALUES (?)", msg.toString(), (args...) =>
-      @events.emit 'incoming'
-      cb?(args...)
+    @db.run "INSERT INTO messages (data, retries) VALUES (?, 0)",
+      msg.toString(), (args...) =>
+        @events.emit 'incoming'
+        cb?(args...)
 
   # Gets the earliest message.
   #
   # cb(err, row) - Function callback that is called with the queue object.
   #                err - Optional error object.
-  #                row - Object with 'id' and 'data' properties.
+  #                row - Object with 'id', 'data', and 'retries' properties.
   #
   # Returns nothing.
   peek: (cb) ->
-    sql = "SELECT rowid AS id, data FROM messages ORDER BY rowid LIMIT 1"
+    sql = "SELECT rowid AS id, data, retries FROM messages
+      ORDER BY time,rowid LIMIT 1"
     @db.get sql, cb
 
   # Counts the messages in the queue.
@@ -76,8 +78,22 @@ class SqliteBackend extends Backend
 
   # Sets up the sqlite table.
   #
+  # cb(err) - Optional Function callback called if there is an error
+  #           creating the table.
+  #
   # Returns nothing.
-  setup: ->
+  setup: (cb) ->
     @db.serialize =>
-      @db.run "CREATE TABLE messages (data TEXT)"
+      @db.run "CREATE TABLE IF NOT EXISTS messages (
+        data TEXT,
+        retries INTEGER,
+        time DATETIME DEFAULT CURRENT_TIMESTAMP)", (err) =>
+          if err
+            cb? err
+            @events.emit 'error', err
+      @db.run "CREATE INDEX IF NOT EXISTS messages_by_time ON messages (time)",
+        (err) =>
+          if err
+            cb? err
+            @events.emit 'error', err
 
