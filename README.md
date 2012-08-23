@@ -1,3 +1,4 @@
+[![build status](https://secure.travis-ci.org/technoweenie/fantomex.png)](http://travis-ci.org/technoweenie/fantomex)
 # Fantomex
 
 ![](https://img.skitch.com/20110524-q4xde31yer216586t3ujumy9hy.png)
